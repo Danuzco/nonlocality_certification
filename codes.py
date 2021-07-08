@@ -22,7 +22,9 @@ def optimal_value(filename, m, num_of_outcomes, num_of_trials, marginals_A,
                  have to be considered for the calculations.
     marginals_B: a list containing the marginals (expressions like  I x B_i ) in the Bob's side that 
                  have to be considered for the calculations.
-                 
+    disp: 'True' for displaying the partial results.
+    save: 'True' to save the coefficients S, Sax and Sby as numpy tensors in the 'npy_data' folder.
+                         
     Returns: 
     Tensors "S", "Sax" and "Sby" containing the coefficients 
     """
