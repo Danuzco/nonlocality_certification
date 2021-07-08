@@ -63,7 +63,7 @@ def optimal_value(filename, m, num_of_outcomes, num_of_trials, marginals_A,
             nlc = NonlinearConstraint( lambda x: -target  
                                       + R( x, p, c, m, num_of_outcomes, marginals_A, marginals_B), 
                                       -np.inf, -target ) # update the constraints
-            Q, C, Dp, gap = results( solution.x, p, c, m, 
+            Q, C, Dq, gap = results( solution.x, p, c, m, 
                                     num_of_outcomes, marginals_A, marginals_B)
             s, sax, sby = vector_to_tensor(solution.x, p, m, num_of_outcomes, marginals_A, marginals_B)
             # save solutions at the 'npy_data' folder
@@ -74,12 +74,12 @@ def optimal_value(filename, m, num_of_outcomes, num_of_trials, marginals_A,
             # display results
             if disp:
                 print( "%5d    %4.5f   %4.5f   %4.5f    %4.5f    %4.5f" 
-                      %(n, -solution.fun, Q, C, Dp, gap) )    
+                      %(n, -solution.fun, Q, C, Dq, gap) )    
         n += 1
     
     if SolutionFound:
         foundResults['Coefficients'] = (s, sax, sby)
-        foundResults['values'] = (Q, C, Dp, gap)
+        foundResults['values'] = (Q, C, Dq, gap)
         return foundResults
     else:
         print("\nNo solution has been found ...")
@@ -220,9 +220,9 @@ def R( s, p, c, m, num_of_outcomes, marginals_A, marginals_B):
     s = vector_to_tensor(s, p, m, num_of_outcomes, marginals_A, marginals_B)
     Q = quantum_max_violation(s, p)
     C = lhv_value(s, m, num_of_outcomes )
-    Dp = error_quantum_value( s, c, m, num_of_outcomes)
+    Dq = error_quantum_value( s, c, m, num_of_outcomes)
     
-    return  -(Q - Dp + k)/(C + k)
+    return  -(Q - Dq + k)/(C + k)
 
 
 def vector_to_tensor(s, p, m, num_of_outcomes, marginals_A, marginals_B):
@@ -298,9 +298,9 @@ def results( s, p, c, m, num_of_outcomes, marginals_A, marginals_B):
     s = (s, sax, sby)
     Q = quantum_max_violation(s, p)
     C = lhv_value(s, m, o )
-    Dp = error_quantum_value( s, c, m, o)
+    Dq = error_quantum_value( s, c, m, o)
     
-    return  Q, C, Dp, (Q - Dp - C)
+    return  Q, C, Dq, (Q - Dq - C)
 
 
 
