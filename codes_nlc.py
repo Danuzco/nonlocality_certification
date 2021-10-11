@@ -18,12 +18,15 @@ def optimal_value(filename, m, num_of_outcomes, num_of_trials, F, marginals_A,
     Arguments:
     m: number of settings.
     filename: Name of the file where the experimental data is stored.
-    marginals_A: a list containing the marginals (expressions like A_i x I ) in the Alice's side that 
-                 have to be considered for the calculations.
-    marginals_B: a list containing the marginals (expressions like  I x B_i ) in the Bob's side that 
-                 have to be considered for the calculations.
+    marginals_A: a list containing the marginals (expressions like A_i x I ) 
+                 in the Alice's side that have to be considered for the 
+                 calculations.
+    marginals_B: a list containing the marginals (expressions like  I x B_i ) 
+                 in the Bob's side that have to be considered for the 
+                 calculations.
     disp: 'True' for displaying the partial results.
-    save: 'True' to save the coefficients S, Sax and Sby as numpy tensors in the 'npy_data' folder.
+    save: 'True' to save the coefficients S, Sax and Sby as numpy tensors in 
+           the 'npy_data' folder.
                          
     Returns: 
     Tensors "S", "Sax" and "Sby" containing the coefficients 
@@ -71,12 +74,17 @@ def optimal_value(filename, m, num_of_outcomes, num_of_trials, F, marginals_A,
             solution = res # keeps the solution that satisfies the constraints
             target = res.fun  # updates the target to the best R value found so far
             nlc = NonlinearConstraint( lambda x: -target  
-                                      + R( x, p, c, m, num_of_outcomes, marginals_A, marginals_B), 
+                                      + R( x, p, c, m, 
+                                          num_of_outcomes, marginals_A, 
+                                          marginals_B), 
                                       -np.inf, -target ) # update the constraints
             
-            Q, C, Dq, gap = results( solution.x, p, c, m, 
-                                    num_of_outcomes, marginals_A, marginals_B)
-            s, sax, sby = vector_to_tensor(solution.x, p, m, num_of_outcomes, marginals_A, marginals_B)
+            Q, C, Dq, gap = results( solution.x, p, c, 
+                                    m, num_of_outcomes, 
+                                    marginals_A, marginals_B)
+            s, sax, sby = vector_to_tensor(solution.x, p,
+                                           m, num_of_outcomes, 
+                                           marginals_A, marginals_B)
             # save solutions at the 'npy_data' folder
             pabxy, pax, pby = p
             if save:
@@ -150,17 +158,21 @@ def quantum_max_violation(s, p):
 
 def error_quantum_value( s, c, m, num_of_outcomes):
     """
-    This function computes the experimental error of the quantum value "Q" from the countings.
+    This function computes the experimental 
+    error of the quantum value "Q" from the countings.
     
     Arguments:
     s: tuple containing the tensors (S, Sax, Sby)
-    c: a numpy ndarray c[a,b,x,y], containing the experimental countings c(ab|xy)
+    c: a numpy ndarray c[a,b,x,y], containing the 
+        experimental countings c(ab|xy)
     m: number of settings 
     num_of_outcomes: number of outcomes
-    marginals_A: a list containing the marginals (expressions like A_i x I ) in the Alice's side that 
-                 have to be considered for the calculations.
-    marginals_B: a list containing the marginals (expressions like  I x B_i ) in the Bob's side that 
-                 have to be considered for the calculations.
+    marginals_A: a list containing the marginals (expressions like A_i x I ) 
+                 in the Alice's side that have to be considered for the 
+                 calculations.
+    marginals_B: a list containing the marginals (expressions like  I x B_i ) 
+                 in the Bob's side that have to be considered for the 
+                 calculations.
 
                  
     Returns:
@@ -174,20 +186,20 @@ def error_quantum_value( s, c, m, num_of_outcomes):
         for l in itertools.product(range(num_of_outcomes), repeat = 2):
             x,y = i
             a,b = l
-            dQ = ( s[a,b,x,y]*np.sum( c[:, :, x, y] ) 
-                  - np.sum(s[:,:,x,y]*c[:,:,x,y] ) )/( np.sum( c[:, :, x, y] )**2 )
+            dQ = (s[a,b,x,y]*np.sum(c[:,:,x,y]) 
+                  - np.sum(s[:,:,x,y]*c[:,:,x,y]))/(np.sum(c[:,:,x,y])**2)
             if False:
-                dQ1 = ( sax[a,x]*np.sum( cax[:,x] ) 
-                       - np.sum(sax[:,x]*cax[:,x] ) )/( np.sum( cax[:,x] )**2 )
-                dQ2 = ( sby[b,y]*np.sum( cby[:,y] ) 
-                       - np.sum(sby[:,y]*cby[:,y] ) )/( np.sum( cby[:,y] )**2 )
+                dQ1 = (sax[a,x]*np.sum(cax[:,x]) 
+                       - np.sum(sax[:,x]*cax[:,x]))/(np.sum(cax[:,x])**2)
+                dQ2 = (sby[b,y]*np.sum( cby[:,y]) 
+                       -np.sum(sby[:,y]*cby[:,y]))/(np.sum(cby[:,y])**2)
                 Delta_Q1 += dQ1**2*cax[a,x]
                 Delta_Q2 += dQ2**2*cby[b,y]
             else:
-                dQ = dQ + (1/m)*(  sax[a,x]*np.sum(c[:, :, y,x] ) 
-                                 - np.sum(sax[:,x]*c[:,:,x,y]) )/( np.sum( c[:, :, x, y] )**2 )
-                dQ = dQ + (1/m)*(  sby[b,y]*np.sum(c[:, :, y,x] ) 
-                                 - np.sum(sby[:,y]*c[:,:,x,y]) )/( np.sum( c[:, :, x, y] )**2 )
+                dQ = dQ + (1/m)*(sax[a,x]*np.sum(c[:,:,y,x]) 
+                         - np.sum(sax[:,x]*c[:,:,x,y]))/(np.sum(c[:,:,x,y])**2)
+                dQ = dQ + (1/m)*(sby[b,y]*np.sum(c[:,:,y,x]) 
+                         - np.sum(sby[:,y]*c[:,:,x,y]))/(np.sum(c[:,:,x, y])**2)
             Delta_Q += dQ**2*c[a,b,x,y]
             
     return np.sqrt( Delta_Q  + Delta_Q1 + Delta_Q2 )
@@ -201,10 +213,12 @@ def initial_guess(m, num_of_outcomes, marginals_A, marginals_B):
     Inputs:
     num_of_outcomes: number of outcomes
     m: number of settings
-    marginals_A: a list containing the marginals (expressions like A_i x I ) in the Alice's side that 
-                 have to be considered for the calculations.
-    marginals_B: a list containing the marginals (expressions like  I x B_i ) in the Bob's side that 
-                 have to be considered for the calculations.
+    marginals_A: a list containing the marginals (expressions like A_i x I ) 
+                 in the Alice's side that have to be considered for the 
+                 calculations.
+    marginals_B: a list containing the marginals (expressions like  I x B_i ) 
+                 in the Bob's side that have to be considered for the 
+                 calculations.
     
     Returns:
     s0: a numpy array with the initial guess
@@ -226,10 +240,12 @@ def R( s, p, c, m, num_of_outcomes, marginals_A, marginals_B):
     c: a tensor c[a,b,x,y], containing the experimental countings c(ab|xy)
     m: number of settings 
     num_of_outcomes: number of outcomes
-    marginals_A: a list containing the marginals (expressions like A_i x I ) in the Alice's side that 
-                 have to be considered for the calculations.
-    marginals_B: a list containing the marginals (expressions like  I x B_i ) in the Bob's side that 
-                 have to be considered for the calculations.
+    marginals_A: a list containing the marginals (expressions like A_i x I ) 
+                     in the Alice's side that have to be considered for the 
+                     calculations.
+    marginals_B: a list containing the marginals (expressions like  I x B_i ) 
+                 in the Bob's side that have to be considered for the 
+                 calculations.
     
     Returns:
     - R
@@ -250,10 +266,12 @@ def vector_to_tensor(s, p, m, num_of_outcomes, marginals_A, marginals_B):
     p: tuple containing the tensors (p, pax, pby)
     m: number of settings 
     num_of_outcomes: number of outcomes
-    marginals_A: a list containing the marginals (expressions like A_i x I ) in the Alice's side that 
-                 have to be considered for the calculations.
-    marginals_B: a list containing the marginals (expressions like  I x B_i ) in the Bob's side that 
-                 have to be considered for the calculations.
+    marginals_A: a list containing the marginals (expressions like A_i x I ) 
+                 in the Alice's side that have to be considered for the 
+                 calculations.
+    marginals_B: a list containing the marginals (expressions like  I x B_i ) 
+                 in the Bob's side that have to be considered for the 
+                 calculations.
     
     Returns:
     Tensors (S, Sax, Sby)
@@ -287,10 +305,12 @@ def results( s, p, c, m, num_of_outcomes, marginals_A, marginals_B):
     p: tuple containing the tensors (p, pax, pby)
     c: a tensor c[a,b,x,y], containing the experimental countings c(ab|xy)
     m: number of settings 
-    marginals_A: a list containing the marginals (expressions like A_i x I ) in the Alice's side that 
-                 have to be considered for the calculations.
-    marginals_B: a list containing the marginals (expressions like  I x B_i ) in the Bob's side that 
-                 have to be considered for the calculations.
+    marginals_A: a list containing the marginals (expressions like A_i x I ) 
+                 in the Alice's side that have to be considered for the 
+                 calculations.
+    marginals_B: a list containing the marginals (expressions like  I x B_i ) 
+                 in the Bob's side that have to be considered for the 
+                 calculations.
     
     Returns:
     A tuple: (Q, C, DeltaQ, Q - DeltaQ - C)
@@ -298,7 +318,7 @@ def results( s, p, c, m, num_of_outcomes, marginals_A, marginals_B):
     o = num_of_outcomes
     n = m**2*o**2
     sax, sby = np.zeros((2,m)), np.zeros((2,m))
-    s, s_marginals = np.array( s[:n] ).reshape((o,o,m,m)),  s[n:]
+    s, s_marginals = np.array( s[:n] ).reshape((o,o,m,m)),s[n:]
     
     j = 0
     if len(marginals_A) > 0:
@@ -324,21 +344,26 @@ def results( s, p, c, m, num_of_outcomes, marginals_A, marginals_B):
 
 def load_data(name_of_file, F, m, num_of_outcomes, marginals_A, marginals_B):
     """
-    Load the experimental countings saved in "countings_C[C].txt". The file is located in the "experimental_data" folder.
+    Load the experimental countings saved in "countings_C[C].txt". 
+    The file is located in the "experimental_data" folder.
     Each file consists of two columns: 
     1) The labels "abxy" 
     2) the countings c(ab|xy)
-    where "a" and "b" are the labels for the outputs of the "x" and "y" settings, respectively.
-    Once the countings are loaded, the experimental frecuencies (probabilities) p(ab|xy) are computed.
+    where "a" and "b" are the labels for the 
+    outputs of the "x" and "y" settings, respectively.
+    Once the countings are loaded, the experimental frecuencies 
+    (probabilities) p(ab|xy) are computed.
     
     Inputs:
     filename: Name of the file where the experimental data is stored.
     m: number of settings
     num_of_outcomes: number of outcomes
-    marginals_A: a list containing the marginals (expressions like A_i x I ) in the Alice's side that 
-                 have to be considered for the calculations.
-    marginals_B: a list containing the marginals (expressions like  I x B_i ) in the Bob's side that 
-                 have to be considered for the calculations.
+    marginals_A: a list containing the marginals (expressions like A_i x I ) 
+                 in the Alice's side that have to be considered for the 
+                 calculations.
+    marginals_B: a list containing the marginals (expressions like  I x B_i ) 
+                 in the Bob's side that have to be considered for the 
+                 calculations.
     
     Returns:
     p: tuple containing the tensors (p, pax, pby)
@@ -386,7 +411,7 @@ def load_data(name_of_file, F, m, num_of_outcomes, marginals_A, marginals_B):
     for l in labels_counts:
         a,b,x,y = l
         a,b,x,y = list( map( int,l ) )
-        p[a,b,x,y] = c[a,b,x,y]/( np.sum( c[:,:,x,y] ) )
+        p[a,b,x,y] = c[a,b,x,y]/(np.sum(c[:,:,x,y]))
     
     p1 = p
     num_of_trials = 10
@@ -396,9 +421,9 @@ def load_data(name_of_file, F, m, num_of_outcomes, marginals_A, marginals_B):
     if measured_marginals:
         for l in labels_counts:
             a,b,x,y = l
-            a,b,x,y = list( map( int,l ) )
-            pax[int(a), int(x)] = cax[int(a), int(x)]/( np.sum( cax[:,int(x)] ) )
-            pby[int(b), int(y)] = cby[int(b), int(y)]/( np.sum( cby[:,int(y)] ) )
+            a,b,x,y = list(map(int,l))
+            pax[int(a), int(x)] = cax[int(a),int(x)]/(np.sum(cax[:,int(x)]))
+            pby[int(b), int(y)] = cby[int(b), int(y)]/(np.sum(cby[:,int(y)]))
 
     if len(marginals_A) > 0:
         for x in marginals_A:
